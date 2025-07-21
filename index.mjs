@@ -1,7 +1,6 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
 import fs from 'fs';
-import { createObjectCsvWriter } from 'csv-writer';
 dotenv.config();
 
 const accessToken = process.env.OPENAPI_ACCESS_TOKEN;
