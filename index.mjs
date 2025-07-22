@@ -62,7 +62,7 @@ async function getOpenApiOrders() {
 
 // 取得 10000 筆會員資料
 // 這裡使用分頁方式，每次取得 500 筆 (因為 per_page 最大值為 999)
-async function getAllCustomers(limit = 10000, perPage = 500) {
+async function get10kCustomers(limit = 10000, perPage = 500) {
   let page = 1;
   let totalFetched = 0;
   const allCustomers = [];
@@ -103,6 +103,48 @@ async function getAllCustomers(limit = 10000, perPage = 500) {
   console.log(`✅ 已完成，總共寫入 ${allCustomers.length} 筆會員資料`);
 }
 
+// 取得 10000 筆訂單資料
+async function get10kOrders(limit = 500, perPage = 500) {
+  let page = 1;
+  let totalFetched = 0;
+  const allorders = [];
+
+  while (totalFetched < limit) {
+    try {
+      const response = await axios.get(
+        `https://open.shopline.io/v1/orders?per_page=${perPage}&page=${page}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            Accept: 'application/json',
+            // 'User-Agent': userAgent,
+          },
+        }
+      );
+
+      const orders = response.data?.items || [];
+      if (orders.length === 0) break; // 若撈不到資料，代表到底了
+
+      allorders.push(...orders);
+      totalFetched += orders.length;
+      console.log(
+        `📦 Page ${page}：已取得 ${orders.length} 筆，累積 ${totalFetched} 筆`
+      );
+      page++;
+    } catch (error) {
+      console.error(
+        `❌ 第 ${page} 頁錯誤：`,
+        error.response?.data || error.message
+      );
+      break;
+    }
+  }
+
+  // ✨ 寫入 JSON
+  createJSON(allorders, './json/orders-500.json');
+  console.log(`✅ 已完成，總共寫入 ${allorders.length} 筆訂單資料`);
+}
+
 // 寫入 JSON
 function createJSON(data, filename) {
   fs.writeFileSync(filename, JSON.stringify(data, null, 2), 'utf-8');
@@ -111,4 +153,5 @@ function createJSON(data, filename) {
 
 // getOpenApiCustomers();
 // getOpenApiOrders();
-getAllCustomers();
+// get10kCustomers();
+get10kOrders();
